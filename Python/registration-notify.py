@@ -2,6 +2,7 @@ import urllib
 import smtplib
 from email.mime.text import MIMEText
 import time
+import sys
 
 def seats(crn):
 	gatech = urllib.urlopen("https://oscar.gatech.edu/pls/bprod/bwckschd.p_disp_detail_sched?term_in=201702&crn_in="+str(crn))
@@ -33,80 +34,80 @@ def seats(crn):
 	gatech.close()
 
 def textAlert(subject,contents):
-    me = '77evan@gmail.com'
+    me = 'registration@petersonev.com'
     you = '4074054234@mms.att.net'
 
     s = smtplib.SMTP('localhost')
 
 
-#	msg = MIMEText(contents)
-#	msg['Subject'] = subject
-#	msg['From'] = me
-#	msg['To'] = you
-#
-#	# Send the message via our own SMTP server, but don't include the
-#	# envelope header.
-#	s = smtplib.SMTP('smtp.gmail.com',587)
-#	s.starttls();
-#	s.login(me,'password')
-#
-#	s.sendmail(me, you, msg.as_string())
-#	s.quit()
+    msg = MIMEText(contents)
+    msg['Subject'] = subject
+    msg['From'] = me
+    msg['To'] = you
 
+    # Send the message via our own SMTP server, but don't include the
+    # envelope header.
+    s = smtplib.SMTP('localhost')
+
+    s.sendmail(me, you, msg.as_string())
+    s.quit()
 
 #classes = [27499,24357,20482,22696,30200,24413]
 #backup = [20476,20479,22717,22713,22715,20929]
 #backup2 = [22720,21071,21068]
 
 #total = [classes,backup,backup2]
-total = [[26619, 29149]]
+total = [[26619, 29149, 30678, 22070]]
 # total = [[22696,30200,22717,22713,22715],[27139,27129],[22720,21071]]
 
-out = 'Class\t\t\t\tCRN\t\t\tTotal\tTaken\tRemain\tWait\tOpen'
+# out = 'Class\t\t\t\tCRN\t\t\tTotal\tTaken\tRemain\tWait\tOpen'
+headers_1 = ['Class', 'CRN', 'Total', 'Taken', 'Remain', 'Wait', 'Open']
 tableOld = []
 
 try:
     for i in total:
-        out+='\n'
         for j in i:
             classs = seats(j)
             tableOld.append(classs)
-            out+='\n' + '\t\t'.join(classs)
-    print out
 except:
     print 'No connection'
 
-textAlert("test1", "test2")
+row_format ="{:>15}" * (len(headers_1))
+print row_format.format(*headers_1)
+for row in tableOld:
+    print row_format.format(*row)
 
-# print '\nChanges:\n'
-
+# textAlert("test1", "test2")
 # tableOld[0][4] = '23'
 
-# while True:
-# 	time.sleep(30)
-# 	tableNew = []
-# 	try:
-# 		for i in total:
-# 			out+='\n'
-# 			for j in i:
-# 				classs = seats(j)
-# 				tableNew.append(classs)
-# 		if len(tableNew)!=len(tableOld):
-# 			print 'Error'
-# 		else:
-# 			change = False
-# 			for i in range(len(tableNew)):
-# 				if tableOld[i][4]!=tableNew[i][4]:
-# 					print '\n' + '\t\t'.join(tableNew[i]) + '\t\tFrom: ' + tableOld[i][4]
-# 					change = True
-# 					textout = tableNew[i][0]+' from ' + tableOld[i][4] + ' to ' + tableNew[i][4]
-# 					textAlert('There has been a change',textout)
-# 			if not change:
-# 				print 'Same'
-# 			else:
-# 				print
-# 			tableOld = tableNew
+if len(sys.argv) != 2 or sys.argv[1] != "loop":
+    sys.exit();
 
-# 	except:
-# 		print 'No connection'
+print '\nChanges:'
+
+while True:
+    time.sleep(30)
+    tableNew = []
+    try:
+        for i in total:
+            #out+='\n'
+            for j in i:
+                classs = seats(j)
+                tableNew.append(classs)
+        if len(tableNew)!=len(tableOld):
+            print 'Error'
+        else:
+            change = False
+            for i in range(len(tableNew)):
+                if tableOld[i][4]!=tableNew[i][4]:
+                    #print '\n' + '\t\t'.join(tableNew[i]) + '\t\tFrom: ' + tableOld[i][4]
+                    print row_format.format(*tableNew[i]) + '\tFrom: ' + tableOld[i][4];
+                    change = True
+                    textout = tableNew[i][0]+' from ' + tableOld[i][4] + ' to ' + tableNew[i][4]
+                    textAlert('There has been a change',textout)
+            if not change:
+                print 'Same'
+            tableOld = tableNew
+    except:
+        print 'No connection'
 
